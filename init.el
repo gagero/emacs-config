@@ -9,6 +9,9 @@
 (package-refresh-contents t)
 (package-initialize)
 
+;; load paths
+(add-to-list 'load-path "/usr/share/emacs/site-lisp/slime")
+
 ;; global minor modes
 (require 'lsp-mode)
 (require 'which-key)
@@ -64,9 +67,9 @@
 (global-set-key (kbd "C-s") 'swiper)
 
 ;; Evil
-;; (require 'evil)
-;; (setq evil-want-keybinding nil)
-;; (evil-mode)
+(require 'evil)
+(setq evil-want-keybinding nil)
+(evil-mode)
 
 ;; EXWM
 (require 'exwm)
@@ -143,29 +146,47 @@
   (require 'dap-cpptools))
 
   ;; irony
-(require 'irony)
-(add-hook 'c++-mode-hook 'irony-mode)
-(add-hook 'c-mode-hook 'irony-mode)
-(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-(eval-after-load 'company
-  '(add-to-list 'company-backends 'company-irony))
-(eval-after-load 'company
-  '(add-to-list 'company-backends 'company-irony-c-headers))
-(eval-after-load 'flycheck
-  '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
-(add-hook 'irony-mode-hook #'irony-eldoc)
+;; (require 'irony)
+;; (add-hook 'c++-mode-hook 'irony-mode)
+;; (add-hook 'c-mode-hook 'irony-mode)
+;; (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+;; (eval-after-load 'company
+  ;; '(add-to-list 'company-backends 'company-irony))
+;; (eval-after-load 'company
+;;   '(add-to-list 'company-backends 'company-irony-c-headers))
+;; (eval-after-load 'flycheck
+;;   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+;; (add-hook 'irony-mode-hook #'irony-eldoc)
+
+;; Common Lisp
+(require 'slime-autoloads)
+(setq inferior-lisp-program "/usr/bin/sbcl")
 
 ;; ebuild
 (add-hook 'ebuild-mode-hook 'ebuild-repo-mode)
 
 ;; Org
 (require 'org-auto-tangle)
-(add-hook 'org-mode-hook 'org-auto-tangle-mode)
-(add-hook 'org-mode-hook 'flyspell-mode)
+(require 'org-indent)
+(add-hook 'org-mode-hook (lambda ()
+						   (org-indent-mode)
+						   (org-auto-tangle-mode)))
 (add-hook 'org-mode-hook (lambda ()
 						   (whitespace-mode -1)
 						   (writeroom-mode -1)
 						   (yas-minor-mode -1)))
+
+;; (org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((shell . t)
+;;    (emacs-lisp . t)
+;;    (arduino . t)
+;;    (c . t)
+;;    (c++ . t)
+;;    (lisp . t)
+;;    (makefile . t)
+;;    (org . t)))
+(setq org-src-preserve-indentation t)
 
 ;; ligatures
 (ligature-set-ligatures t '("www"))
@@ -193,7 +214,7 @@
  '(erc-modules
    '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse hl-nicks netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
  '(package-selected-packages
-   '(pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writeroom-mode writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-java lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
+   '(evil pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writeroom-mode writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-java lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
  '(save-place-mode t)
  '(warning-suppress-log-types '((comp) (comp) (emacs)))
  '(warning-suppress-types '((comp) (emacs))))
