@@ -7,7 +7,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(deeper-blue))
+ '(custom-enabled-themes '(modus-vivendi))
  '(custom-safe-themes
    '("4aafea32abe07a9658d20aadcae066e9c7a53f8e3dfbd18d8fa0b26c24f9082c" "fe1c13d75398b1c8fd7fdd1241a55c286b86c3e4ce513c4292d01383de152cb7" default))
  '(erc-auto-query 'window-noselect)
@@ -31,9 +31,6 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-refresh-contents t)
 (package-initialize)
-
-;; load paths
-
 
 ;; global minor modes
 (require 'lsp-mode)
@@ -92,9 +89,9 @@
 (global-set-key (kbd "C-s") 'swiper)
 
 ;; Evil
-;; (require 'evil)
-;; (setq evil-want-keybinding nil)
-;; (evil-mode)
+(require 'evil)
+(setq evil-want-keybinding nil)
+(evil-mode)
 
 ;; EXWM
 (require 'exwm)
@@ -183,11 +180,14 @@
 ;;   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 ;; (add-hook 'irony-mode-hook #'irony-eldoc)
 
-;; Common Lisp
+;; Common Lisp config
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
 (load "/usr/share/emacs/site-lisp/slime/slime-autoloads")
 ;(require 'slime-autoloads)
 (setq inferior-lisp-program "/usr/bin/sbcl")
+
+;; Elisp config
+(add-hook 'emacs-lisp-mode-hook '(lsp-mode -1))
 
 ;; ebuild
 (add-hook 'ebuild-mode-hook 'ebuild-repo-mode)
