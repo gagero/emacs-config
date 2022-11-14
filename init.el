@@ -2,6 +2,29 @@
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
 (require 'package)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes '(deeper-blue))
+ '(custom-safe-themes
+   '("4aafea32abe07a9658d20aadcae066e9c7a53f8e3dfbd18d8fa0b26c24f9082c" "fe1c13d75398b1c8fd7fdd1241a55c286b86c3e4ce513c4292d01383de152cb7" default))
+ '(erc-auto-query 'window-noselect)
+ '(erc-modules
+   '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse hl-nicks netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
+ '(package-selected-packages
+   '( diff-hl evil pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writeroom-mode writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-java lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
+ '(save-place-mode t)
+ '(warning-suppress-log-types '((comp) (comp) (emacs)))
+ '(warning-suppress-types '((comp) (emacs))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "FiraCode Nerd Font Mono" :foundry "CTDB" :slant normal :weight normal :height 108 :width normal)))))
+
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;; and `package-pinned-packages`. Most users will not need or want to do this.
 ;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
@@ -10,7 +33,7 @@
 (package-initialize)
 
 ;; load paths
-(add-to-list 'load-path "/usr/share/emacs/site-lisp/slime")
+
 
 ;; global minor modes
 (require 'lsp-mode)
@@ -33,6 +56,8 @@
 (counsel-mode)
 (require 'org-modern)
 (global-org-modern-mode)
+(require 'diff-hl)
+(global-diff-hl-mode)
 (setq make-backup-files nil select-enable-clipboard t)
 
 ;; global hooks
@@ -67,9 +92,9 @@
 (global-set-key (kbd "C-s") 'swiper)
 
 ;; Evil
-(require 'evil)
-(setq evil-want-keybinding nil)
-(evil-mode)
+;; (require 'evil)
+;; (setq evil-want-keybinding nil)
+;; (evil-mode)
 
 ;; EXWM
 (require 'exwm)
@@ -159,7 +184,8 @@
 ;; (add-hook 'irony-mode-hook #'irony-eldoc)
 
 ;; Common Lisp
-(require 'slime-autoloads)
+(add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
+(load "/usr/share/emacs/site-lisp/slime/slime-autoloads")
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
 ;; ebuild
@@ -202,27 +228,5 @@
                                      "<~" "<~~" "</" "</>" "~@" "~-" "~>" "~~" "~~>" "%%"))
 (global-ligature-mode t)
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(deeper-blue))
- '(custom-safe-themes
-   '("4aafea32abe07a9658d20aadcae066e9c7a53f8e3dfbd18d8fa0b26c24f9082c" "fe1c13d75398b1c8fd7fdd1241a55c286b86c3e4ce513c4292d01383de152cb7" default))
- '(erc-auto-query 'window-noselect)
- '(erc-modules
-   '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse hl-nicks netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
- '(package-selected-packages
-   '(evil pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writeroom-mode writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-java lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
- '(save-place-mode t)
- '(warning-suppress-log-types '((comp) (comp) (emacs)))
- '(warning-suppress-types '((comp) (emacs))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "FiraCode Nerd Font Mono" :foundry "CTDB" :slant normal :weight normal :height 108 :width normal)))))
 
 ;;; init.el ends here
