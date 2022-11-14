@@ -186,6 +186,7 @@
 ;; Common Lisp
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
 (load "/usr/share/emacs/site-lisp/slime/slime-autoloads")
+;(require 'slime-autoloads)
 (setq inferior-lisp-program "/usr/bin/sbcl")
 
 ;; ebuild
@@ -202,16 +203,17 @@
 						   (writeroom-mode -1)
 						   (yas-minor-mode -1)))
 
-;; (org-babel-do-load-languages
-;;  'org-babel-load-languages
-;;  '((shell . t)
-;;    (emacs-lisp . t)
-;;    (arduino . t)
-;;    (c . t)
-;;    (c++ . t)
-;;    (lisp . t)
-;;    (makefile . t)
-;;    (org . t)))
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((shell . t)
+   (emacs-lisp . t)
+   (arduino . t)
+   (c . t)
+   (c++ . t)
+   (lisp . t)
+   (makefile . t)
+   (org . t)
+   (calc . t)))
 (setq org-src-preserve-indentation t)
 
 ;; ligatures
