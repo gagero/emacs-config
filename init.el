@@ -9,12 +9,12 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(modus-vivendi))
  '(custom-safe-themes
-   '("4aafea32abe07a9658d20aadcae066e9c7a53f8e3dfbd18d8fa0b26c24f9082c" "fe1c13d75398b1c8fd7fdd1241a55c286b86c3e4ce513c4292d01383de152cb7" default))
+	 '("4aafea32abe07a9658d20aadcae066e9c7a53f8e3dfbd18d8fa0b26c24f9082c" "fe1c13d75398b1c8fd7fdd1241a55c286b86c3e4ce513c4292d01383de152cb7" default))
  '(erc-auto-query 'window-noselect)
  '(erc-modules
-   '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse hl-nicks netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
+	 '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse hl-nicks netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
  '(package-selected-packages
-   '( diff-hl evil pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writeroom-mode writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-java lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
+	 '(paredit rainbow-delimiters nasm-mode emms swiper lsp-mode irony git-commit flycheck company company-c-headers hydra ivy mastodon go-translate elfeed-goodies elfeed-dashboard elfeed-summary elfeed-autotag elfeed-tube elfeed-tube-mpv elfeed embark diff-hl evil pdf-tools hl-todo vlf arduino-cli-mode platformio-mode lsp-javacomp javadoc-lookup company-arduino arduino-mode org-modern yasnippet writegood-mode which-key wc-mode undo-tree uncrustify-mode magit tree-sitter-langs rustic orgit org-roam-ui org-contrib org-auto-tangle magit-todos magit-org-todos lsp-ui lsp-ivy ligature ivy-emms irony-eldoc flycheck-rust flycheck-irony exwm eshell-vterm erc-yt erc-yank erc-tweet erc-scrolltoplace erc-image erc-hl-nicks erc-colorize erc emms-state emms-info-mediainfo eldoc-cmake counsel company-irony-c-headers company-irony color-identifiers-mode cmake-project cmake-mode c-eldoc beacon annalist))
  '(save-place-mode t)
  '(warning-suppress-log-types '((comp) (comp) (emacs)))
  '(warning-suppress-types '((comp) (emacs))))
@@ -51,34 +51,32 @@
 (tool-bar-mode -1)
 (require 'counsel)
 (counsel-mode)
-(require 'org-modern)
-(global-org-modern-mode)
 (require 'diff-hl)
 (global-diff-hl-mode)
 (setq make-backup-files nil select-enable-clipboard t)
+(require 'rainbow-delimiters)
+(rainbow-delimiters-mode)
+;(require 'go)
+;(setq gts-translate-list )
+(desktop-save-mode 1)
 
 ;; global hooks
 (add-hook 'before-save-hook 'lsp-format-buffer)
 (add-hook 'after-init-hook 'global-color-identifiers-mode)
-(require 'wc-mode)
-(add-hook 'text-mode-hook 'wc-mode)
-(require 'flyspell)
-(add-hook 'text-mode-hook 'flyspell-mode)
-(require 'writegood-mode)
-(add-hook 'text-mode-hook 'writegood-mode)
-(require 'writeroom-mode)
-(add-hook 'text-mode-hook 'writeroom-mode)
-(add-hook 'text-mode-hook 'whitespace-mode)
 
 ;; minor hooks
-(add-hook 'nxml-mode-hook (lambda () (writegood-mode -1) (writeroom-mode -1) (whitespace-mode -1)))
+(add-hook 'nxml-mode-hook (lambda () (writegood-mode -1) (whitespace-mode -1)))
+(add-hook 'dired-mode-hook 'dired-omit-mode)
+(add-hook 'vterm-mode-hook (lambda () (evil-mode -1)))
+;(add-hook 'eww-mode-hook (lambda () (evil-mode -1))) ; TODO: fix
 
 ;; global settings
 (global-display-line-numbers-mode)
 (menu-bar--display-line-numbers-mode-relative)
-(setq shell-file-name "/bin/bash")
+(setq-default shell-file-name "/bin/bash")
 (scroll-bar-mode -1)
-(setq-default tab-width 4 indent-tabs-mode t)
+(setq-default tab-width 2 indent-tabs-mode t)
+(setq debug-on-error t)
 
 ;; global keybindings
 (defun turn-off-minibuffer-buffer ()
@@ -86,25 +84,33 @@
 (interactive)
   (ivy-mode -1)
   (counsel-mode -1))
+
 (global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-c e") 'evil-mode)
+(global-set-key (kbd "C-c r") 'eval-buffer)
+(global-set-key (kbd "C-c c") 'compile)
+
+  ;; magit keybindings
+(global-set-key (kbd "C-c g c") 'magit-commit)
+(global-set-key (kbd "C-c g s") 'magit-status)
 
 ;; Evil
+(setq-default evil-want-keybinding nil)
 (require 'evil)
-(setq evil-want-keybinding nil)
 (evil-mode)
 
 ;; EXWM
-(require 'exwm)
-(require 'exwm-config)
-(exwm-config-example)
-(require 'exwm-randr)
-(setq exwm-randr-workspace-monitor-plist '(0 "HDMI-0" 1 "DVI-I-1"))
-(add-hook 'exwm-randr-screen-change-hook
-		  (lambda ()
-			(start-process-shell-command "xrandr" nil "xrandr --output HDMI-0 --mode 1920x1080 --pos 0x0 --roate-normal --output DVI-I-1 --primary --mode 1920x1080 --pos 1920x0 --rotate-normal")))
-(exwm-randr-enable)
-(require 'exwm-systemtray)
-(exwm-systemtray-enable)
+;; (require 'exwm)
+;; (require 'exwm-config)
+;; (exwm-config-example)
+;; (require 'exwm-randr)
+;; (setq exwm-randr-workspace-monitor-plist '(0 "HDMI-0" 1 "DVI-I-1"))
+;; (add-hook 'exwm-randr-screen-change-hook
+;; 		  (lambda ()
+;; 			(start-process-shell-command "xrandr" nil "xrandr --output HDMI-0 --mode 1920x1080 --pos 0x0 --roate-normal --output DVI-I-1 --primary --mode 1920x1080 --pos 1920x0 --rotate-normal")))
+;; (exwm-randr-enable)
+;; (require 'exwm-systemtray)
+;; (exwm-systemtray-enable)
 
 ;; lsp-ui
 (require 'lsp-ui)
@@ -120,12 +126,13 @@
 (require 'emms-setup)
 (emms-all)
 (emms-default-players)
-(setq emms-source-file-default-directory "/home/gabor/Music"
-      emms-repeat-playlist 1
-      emms-random-playlist 1
-      emms-browser-switch-to-playlist-on-add t)
+(defvar emms-source-file-default-directory "/home/gabor/Music")
+(defvar emms-browser-switch-to-playlist-on-add t)
+(setq emms-repeat-playlist t
+      emms-random-playlist t)
 (global-set-key (kbd "C-c m s") (lambda () (interactive) (emms-play-directory-tree "~/Music")))
 (global-set-key (kbd "C-c m p") 'emms-stop)
+(global-set-key (kbd "C-c m r") 'emms-start)
 
 ;; ERC (IRC)
 (require 'erc)
@@ -140,9 +147,7 @@
 						   (counsel-mode -1)
 						   (ivy-mode -1)
 						   (which-key-mode -1)
-						   (company-mode -1)
-						   (flyspell-mode)
-						   (ispell-change-dictionary "en")))
+						   (company-mode)))
 
 ;; mu4e
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e/")
@@ -164,8 +169,7 @@
       lsp-idle-delay 0.1)  ;; clangd is fast
 
 (with-eval-after-load 'lsp-mode
-  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  (require 'dap-cpptools))
+  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
 
   ;; irony
 ;; (require 'irony)
@@ -180,14 +184,42 @@
 ;;   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 ;; (add-hook 'irony-mode-hook #'irony-eldoc)
 
+;; Shared Lisp config
+
+(add-hook 'lisp-mode-hook (lambda () (lsp-mode -1)))
+
+(add-hook 'lisp-mode-hook 'paredit-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook 'paredit-mode)
+(add-hook 'lisp-interaction-mode-hook 'paredit-mode)
+(add-hook 'slime-repl-mode-hook 'paredit-mode)
+
+(add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'lisp-interaction-mode-hook 'rainbow-delimiters-mode)
+
 ;; Common Lisp config
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
 (load "/usr/share/emacs/site-lisp/slime/slime-autoloads")
-;(require 'slime-autoloads)
 (setq inferior-lisp-program "/usr/bin/sbcl")
+(add-hook 'slime-mode-hook (defun slime-sanitize-bindings ()
+			     "Removes SLIME's keybinding on C-c x"
+			     (cond ((boundp 'slime-mode-map)
+				    (define-key slime-mode-map (kbd "C-c x") nil)
+				    (message "SLIME keybinding on C-c x has been sanitized"))
+				   ('t (message "SLIME keybindings not sanitized")))))
 
+(add-hook 'lisp-mode-hook 'slime)
+(global-set-key (kbd "C-c C-q") 'slime-close-all-parens-in-sexp)
 ;; Elisp config
-(add-hook 'emacs-lisp-mode-hook '(lsp-mode -1))
+(add-hook 'emacs-lisp-mode-hook (lambda () (lsp-mode -1)))
+(when (string-equal major-mode "emacs-lisp-mode")
+	(add-hook 'after-save-hook '(byte-recompile-directory "~/.emacs.d")))
+(add-hook 'emacs-lisp-mode-hook 'paredit-mode)
+(add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+
+;; ASM config (NASM)
+
+
 
 ;; ebuild
 (add-hook 'ebuild-mode-hook 'ebuild-repo-mode)
@@ -195,27 +227,24 @@
 ;; Org
 (require 'org-auto-tangle)
 (require 'org-indent)
-(add-hook 'org-mode-hook (lambda ()
-						   (org-indent-mode)
-						   (org-auto-tangle-mode)))
-(add-hook 'org-mode-hook (lambda ()
-						   (whitespace-mode -1)
-						   (writeroom-mode -1)
-						   (yas-minor-mode -1)))
+(add-hook 'org-mode-hook (lambda () (org-indent-mode) (org-auto-tangle-mode)))
+(add-hook 'org-mode-hook (lambda () (yas-minor-mode -1) (evil-mode -1)))
+(add-hook 'org-mode-hook #'org-modern-mode)
+(add-hook 'org-agenda-finalize-hook #'org-modern-agenda)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((shell . t)
    (emacs-lisp . t)
    (arduino . t)
-   (c . t)
-   (c++ . t)
    (lisp . t)
    (makefile . t)
    (org . t)
    (calc . t)))
-(setq org-src-preserve-indentation t)
+(setq org-src-preserve-indentation t org-src-fontify-natively t org-confirm-babel-evaluate nil)
 
+;; Info
+;(add-hook 'Info-mode-hook (lambda () (evil-mode -1))) ; TODO: fix
 ;; ligatures
 (ligature-set-ligatures t '("www"))
 (ligature-set-ligatures 'prog-mode '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\" "{-" "::"
