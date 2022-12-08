@@ -59,10 +59,18 @@
 ;(require 'go)
 ;(setq gts-translate-list )
 (desktop-save-mode 1)
+(when (display-graphic-p)
+	(require 'all-the-icons))
+(require 'dashboard)
+(dashboard-setup-startup-hook)
 
 ;; global hooks
 (add-hook 'before-save-hook 'lsp-format-buffer)
-(add-hook 'after-init-hook 'global-color-identifiers-mode)
+
+;; global functions
+(defun disable-lsp-mode ()
+	"Disable LSP Mode."
+	(lsp-mode -1))
 
 ;; minor hooks
 (add-hook 'nxml-mode-hook (lambda () (writegood-mode -1) (whitespace-mode -1)))
@@ -186,32 +194,36 @@
 
 ;; Shared Lisp config
 
-(add-hook 'lisp-mode-hook (lambda () (lsp-mode -1)))
+(add-hook 'lisp-mode-hook 'disable-lsp-mode)
 
 (add-hook 'lisp-mode-hook 'paredit-mode)
 (add-hook 'eval-expression-minibuffer-setup-hook 'paredit-mode)
 (add-hook 'lisp-interaction-mode-hook 'paredit-mode)
-(add-hook 'slime-repl-mode-hook 'paredit-mode)
 
 (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
-(add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode)
 (add-hook 'lisp-interaction-mode-hook 'rainbow-delimiters-mode)
 
 ;; Common Lisp config
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
 (load "/usr/share/emacs/site-lisp/slime/slime-autoloads")
 (setq inferior-lisp-program "/usr/bin/sbcl")
-(add-hook 'slime-mode-hook (defun slime-sanitize-bindings ()
-			     "Removes SLIME's keybinding on C-c x"
-			     (cond ((boundp 'slime-mode-map)
-				    (define-key slime-mode-map (kbd "C-c x") nil)
-				    (message "SLIME keybinding on C-c x has been sanitized"))
-				   ('t (message "SLIME keybindings not sanitized")))))
 
 (add-hook 'lisp-mode-hook 'slime)
-(global-set-key (kbd "C-c C-q") 'slime-close-all-parens-in-sexp)
+(add-hook 'lisp-mode-hook 'slime-mode)
+(add-hook 'slime-repl-mode-hook 'paredit-mode)
+(add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode)
+
+(add-hook 'slime-mode-hook (lambda ()
+														 (define-key slime-mode-map (kbd "C-c s C-q") 'slime-close-all-parens-in-sexp)
+														 (define-key slime-mode-map (kbd "C-c s C-c") 'slime-compile-defun)
+														 (define-key slime-mode-map (kbd "C-c s C-l") 'slime-load-file)
+														 (define-key slime-mode-map (kbd "C-c s C-k") 'slime-compile-and-load-file)))
+(add-hook 'paredit-mode-hook (lambda ()
+															 (define-key paredit-mode-map (kbd "C-M-s-<right>") 'paredit-forward-slurp-sexp)
+															 (define-key paredit-mode-map (kbd "C-M-s-<left>") 'paredit-forward-barf-sexp)))
+
 ;; Elisp config
-(add-hook 'emacs-lisp-mode-hook (lambda () (lsp-mode -1)))
+(add-hook 'emacs-lisp-mode-hook 'disable-lsp-mode)
 (when (string-equal major-mode "emacs-lisp-mode")
 	(add-hook 'after-save-hook '(byte-recompile-directory "~/.emacs.d")))
 (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
