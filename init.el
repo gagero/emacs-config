@@ -33,7 +33,8 @@
 ;; global minor modes
 (use-package corfu
 	:demand t
-	:custom ((corfu-auto t) (corfu-cycle t) (corfu-preselect 'prompt) (completion-cycle-threshold 3) (tab-always-indent 'complete) (corfu-quit-no-match t))
+	:after (emacs)
+	:custom ((corfu-auto t) (corfu-cycle t) (corfu-preselect 'prompt) (corfu-quit-no-match t))
 	:hook (prog-mode . corfu-mode)
 	:bind (:map corfu-map
 							("TAB" . corfu-next)
@@ -52,7 +53,7 @@
 (use-package cape
 	:demand t
 	:config
-	(setq completion-at-point-functions (list (cape-super-capf #'cape-keyword #'cape-file #'cape-dabbrev))))
+	(setq-local completion-at-point-functions (list (cape-super-capf #'cape-keyword #'cape-file #'cape-dabbrev))))
 (use-package which-key
 	:demand t
   :config
@@ -116,9 +117,6 @@
 (use-package diff-hl
 	:hook (prog-mode text-mode)
 	:config (diff-hl-margin-mode))
-(when (display-graphic-p)
-  (use-package all-the-icons
-    :demand t))
 (use-package color-identifiers-mode
   :demand t
   :config
@@ -226,7 +224,7 @@
 	:hook (xref-after-update-hook . outline-minor-mode)
 	:bind (("M-i" . imenu) ("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline))
 	:custom
-	(debug-on-error t) (load-prefer-newer t) (sentence-end-double-space t) (make-backup-files nil) (select-enable-clipboard t) (next-line-add-newlines t) (show-paren-context-when-offscreen t) (compilation-auto-jump-to-first-error 'first-known))
+	(debug-on-error t) (load-prefer-newer t) (sentence-end-double-space t) (make-backup-files nil) (select-enable-clipboard t) (next-line-add-newlines t) (show-paren-context-when-offscreen t) (compilation-auto-jump-to-first-error 'first-known) (completion-cycle-threshold 3) (tab-always-indent 'complete))
 
 ;; Major modes without extra config
 
@@ -257,10 +255,7 @@
 (use-package magit
   :demand t
 	:bind
-  (("C-c C-g c" . magit-commit)
-   ("C-c C-g s" . magit-status)
-   ("C-c C-g b s" . magit-branch-checkout)
-   ("C-c C-g p s" . magit-patch-save)))
+  (("C-c g" . magit)))
 (use-package forge
 	:demand t
 	:after (magit))
