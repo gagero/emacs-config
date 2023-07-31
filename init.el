@@ -53,7 +53,7 @@
 (use-package cape
 	:demand t
 	:config
-	(setq-local completion-at-point-functions (list (cape-super-capf #'cape-keyword #'cape-file #'cape-dabbrev))))
+	(setq completion-at-point-functions (list (cape-super-capf #'cape-keyword #'cape-file #'cape-dabbrev))))
 (use-package which-key
 	:demand t
   :config
@@ -72,17 +72,9 @@
   :init
   ;; Setup completion at point
   (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand
                       completion-at-point-functions)))
-
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
 (use-package tempel-collection
@@ -139,7 +131,7 @@
   :demand t
 	:after (orderless)
 	:custom (consult-line-start-from-top t)
-	:bind ("C-s" . consult-line))
+	:bind ("C-s" . consult-line) ("M-i" . consult-imenu))
 (use-package embark
   :demand t
   :bind
@@ -175,12 +167,6 @@
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
-
-(defun create-tags (dir-name)
-  "Create tags file in DIR-NAME."
-  (interactive "DDirectory: ")
-  (eshell-command
-   (format "find %s -type f -name \"*.[ch]\" | etags -" dir-name)))
 
 (defun end-newline ()
 	"Inserts newline below point."
@@ -222,7 +208,7 @@
 	(setq-default tab-width 2 indent-tabs-mode t)
 	(setq-default compile-command "make -j16")
 	:hook (xref-after-update-hook . outline-minor-mode)
-	:bind (("M-i" . imenu) ("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline))
+	:bind (("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline))
 	:custom
 	(debug-on-error t) (load-prefer-newer t) (sentence-end-double-space t) (make-backup-files nil) (select-enable-clipboard t) (next-line-add-newlines t) (show-paren-context-when-offscreen t) (compilation-auto-jump-to-first-error 'first-known) (completion-cycle-threshold 3) (tab-always-indent 'complete))
 
@@ -234,10 +220,10 @@
 		(setq-local electric-pair-pairs (append electric-pair-pairs zig-pairs)))
 	:hook (zig-mode . zig-add-electric-pairs)
 	:demand t
-	:config (setq compile-command "zig build-exe"))
+	:config (setq-local compile-command "zig build-exe"))
 (use-package rustic
 	:demand t
-	:config (setq compile-command "cargo build"))
+	:config (setq-local compile-command "cargo build"))
 
 ;; LSP
 (use-package eglot
@@ -248,8 +234,7 @@
 	:custom (completion-category-overrides '((eglot (styles orderless))))
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
 	:hook (eglot-managed-mode . (setq-local completion-at-point-functions
-																					 (list (cape-super-capf #'eglot-completion-at-point #'tempel-expand #'cape-file))))
-	:hook (eglot-managed-mode . eglot-cape-tempel-capf))
+																					(list (cape-super-capf #'eglot-completion-at-point #'tempel-expand #'cape-file)))))
 
 ;; magit
 (use-package magit
@@ -259,7 +244,7 @@
 (use-package forge
 	:demand t
 	:after (magit))
-;; Debug
+;; Debugging
 (defun debug-gud ()
   "GUD setup for Rust and core files."
   (interactive)
@@ -271,7 +256,7 @@
 (use-package erc
   :demand t
   :config
-(setq erc-auto-query 'window-noselect)
+	(setq erc-auto-query 'window-noselect)
   (setq erc-nick "Pay08" erc-server "irc.libera.chat" erc-port 6667)
   (setq erc-modules '(button completion fill list match readonly ring scrolltobottom smiley stamp spelling unmorse netsplit fill track networks autojoin noncommands irccontrols move-to-prompt menu))
   (erc-update-modules)
@@ -329,12 +314,19 @@
 	:hook (lisp-mode emacs-lisp-mode scheme-mode))
 
 ;; Common Lisp config
-(use-package slime
+(use-package sly
   :demand t
-  :config (slime-setup '(slime-fancy slime-asdf slime-banner slime-autodoc))
-  :hook (lisp-mode)
   :config
   (setq inferior-lisp-program "sbcl --noinform --no-linedit"))
+(use-package sly-macrostep
+	:demand t
+	:requires (sly))
+(use-package sly-asdf
+	:demand t
+	:requires (sly))
+(use-package sly-quicklisp
+	:demand t
+	:requires (sly))
 
 ;; Guile Config
 (use-package geiser-guile
@@ -384,12 +376,9 @@
 (use-package org-download
   :demand t
   :requires org)
-;; GUD
 
-;; Python
-(use-package jedi
-	:demand t
-	:hook (python-mode . jedi:setup))
+;; Testing
+;; (use-package combobulate)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
