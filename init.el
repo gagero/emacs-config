@@ -1,6 +1,6 @@
 ;;; init.el --- init
 ;;; Commentary:
-;;; TODO: ASM setup, GUD setup, occur
+;;; TODO: ASM setup, GUD setup, occur, xref keybindings, switching to flymake
 ;;; init.el, todos in ~/.emacs.d/emacs.org
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
@@ -100,9 +100,6 @@
 (use-package info+
 	:straight nil
 	:demand t)
-(use-package guix
-	:straight nil
-	:demand t)
 (use-package vertico
 	:demand t
 	:config (vertico-mode))
@@ -123,8 +120,6 @@
   :straight nil
   :demand t
   :hook (prog-mode . hs-minor-mode))
-(use-package vlf
-  :demand t)
 (use-package iedit
 	:demand t)
 (use-package consult
@@ -158,12 +153,6 @@
   :config (xclip-mode))
 (use-package treesit-auto
   :config (global-treesit-auto-mode))
-(use-package bufler
-	:demand t
-	:config (bufler-mode)
-	:bind
-	("C-x b" . bufler-switch-buffer)
-	("C-x C-b" . bufler-list))
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
@@ -195,7 +184,6 @@
 	(global-auto-revert-mode)
 	(pixel-scroll-precision-mode)
 	(save-place-mode)
-	(global-display-line-numbers-mode)
 	(menu-bar--display-line-numbers-mode-relative)
 	(electric-pair-mode)
 	(recentf-mode)
@@ -203,14 +191,15 @@
 	(undelete-frame-mode)
 	(show-paren-mode)
 	(defalias 'yes-or-no-p 'y-or-n-p)
-	(defalias 'term 'ansi-term)
+	(defalias 'term 'eat)
+	(defalias 'shell 'eat)
 	(setq-default shell-file-name "bash")
 	(setq-default tab-width 2 indent-tabs-mode t)
 	(setq-default compile-command "make -j16")
 	:hook (xref-after-update-hook . outline-minor-mode)
-	:bind (("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline))
-	:custom
-	(debug-on-error t) (load-prefer-newer t) (sentence-end-double-space t) (make-backup-files nil) (select-enable-clipboard t) (next-line-add-newlines t) (show-paren-context-when-offscreen t) (compilation-auto-jump-to-first-error 'first-known) (completion-cycle-threshold 3) (tab-always-indent 'complete))
+	(prog-mode . display-line-numbers-mode)
+	:bind (("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline) ("C-x p C-f" . project-find-file)))
+(setq  debug-on-error t load-prefer-newer t sentence-end-double-space t make-backup-files nil select-enable-clipboard t next-line-add-newlines t show-paren-context-when-offscreen t compilation-auto-jump-to-first-error 'first-known completion-cycle-threshold 3 tab-always-indent 'complete gc-cons-threshold (* 100 1024 1024) read-process-output-max (* 1024 1024) browse-url-browser-function #'eww-browse-url)
 
 ;; Major modes without extra config
 
@@ -223,7 +212,8 @@
 	:config (setq-local compile-command "zig build-exe"))
 (use-package rustic
 	:demand t
-	:config (setq-local compile-command "cargo build"))
+	:config (setq-local compile-command "cargo build")
+	(setq rustic-lsp-client 'eglot))
 
 ;; LSP
 (use-package eglot
@@ -233,8 +223,20 @@
 	:demand t
 	:custom (completion-category-overrides '((eglot (styles orderless))))
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
-	:hook (eglot-managed-mode . (setq-local completion-at-point-functions
-																					(list (cape-super-capf #'eglot-completion-at-point #'tempel-expand #'cape-file)))))
+	(add-hook 'eglot-managed-mode-hook #'(setq-local completion-at-point-functions
+																					 (list (cape-super-capf #'eglot-completion-at-point #'tempel-expand #'cape-file))))
+	:bind (:map eglot-mode-map
+							("C-c C-e C-a" . eglot-code-actions)
+							("C-c C-e a" . eglot-code-actions)
+							("C-c C-e C-r" . eglot-rename)
+							("C-c C-e r" . eglot-rename)
+							("C-c C-e C-f" . eglot-format-buffer)
+							("C-c C-e f" . eglot-format-buffer)
+							("C-c C-e " . eglot-))
+	:hook
+	(c-ts-mode . eglot-ensure)
+	(zig-mode . eglot-ensure)
+	(c++-ts-mode . eglot-ensure))
 
 ;; magit
 (use-package magit
@@ -244,6 +246,7 @@
 (use-package forge
 	:demand t
 	:after (magit))
+
 ;; Debugging
 (defun debug-gud ()
   "GUD setup for Rust and core files."
@@ -268,32 +271,26 @@
 (use-package ement
 	:demand t)
 
-;; C/C++ config
-(setq gc-cons-threshold (* 100 1024 1024)
-      read-process-output-max (* 1024 1024))  ;; clangd is fast
-
 (use-package disaster
-  :bind (:map c-mode-map
+  :bind (:map c-ts-mode-map
 							("C-c C-d" . disaster)
-							:map c++-mode-map ;; todo fix
+							:map c++-ts-mode-map
 							("C-c C-d" . disaster)))
 
-(use-package c-mode
+(use-package c-ts-mode
   :straight nil
-  :bind (:map c-mode-map
-							("C-c C-o" . ff-find-other-file-other-window))
-  :custom ((gc-cons-treshold (* 100 1024 1024)) (read-process-output-max (* 1024 1024))))
-(use-package c++-mode
+  :bind (:map c-ts-mode-map
+							("C-c C-o" . ff-find-other-file-other-window)))
+(use-package c++-ts-mode
   :straight nil
-  :bind (:map c++-mode-map
-							("C-c C-o" . ff-find-other-file-other-window))
-	:custom ((gc-cons-treshold (* 100 1024 1024)) (read-process-output-max (* 1024 1024))))
+  :bind (:map c++-ts-mode-map
+							("C-c C-o" . ff-find-other-file-other-window)))
 
 ;; Shared Lisp config
 (use-package paredit
   :demand t
   :hook
-  (lisp-mode eval-expression-minibuffer-setup lisp-interaction-mode slime-repl-mode emacs-lisp-mode scheme-mode)
+  (lisp-mode lisp-interaction-mode slime-repl-mode emacs-lisp-mode scheme-mode)
   :bind
   (:map paredit-mode-map
 				("M-<right>" . paredit-forward-slurp-sexp)
@@ -301,7 +298,7 @@
 				("C-<left>" . paredit-backward-slurp-sexp)
 				("C-<right>" . paredit-backward-barf-sexp)
 				("M-r" . move-to-window-line-top-bottom)
-				("C-k" . paredit-kill))) ; todo bind paredit-forward and paredit-backward and paredit-kill
+				("C-k" . paredit-kill))) ; todo bind paredit-forward and paredit-backward
 
 (use-package highlight-function-calls
   :hook (lisp-mode emacs-lisp-mode scheme-mode))
@@ -317,7 +314,8 @@
 (use-package sly
   :demand t
   :config
-  (setq inferior-lisp-program "sbcl --noinform --no-linedit"))
+  (setq inferior-lisp-program "sbcl --noinform --no-linedit")
+	:hook (sly-mrepl-mode . corfu-mode) (sly-mrepl-mode . paredit-mode))
 (use-package sly-macrostep
 	:demand t
 	:requires (sly))
@@ -386,85 +384,85 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(connection-local-criteria-alist
-	 '(((:application tramp)
-			tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
+   '(((:application tramp)
+      tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
  '(connection-local-profile-alist
-	 '((tramp-connection-local-darwin-ps-profile
-			(tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
-			(tramp-process-attributes-ps-format
-			 (pid . number)
-			 (euid . number)
-			 (user . string)
-			 (egid . number)
-			 (comm . 52)
-			 (state . 5)
-			 (ppid . number)
-			 (pgrp . number)
-			 (sess . number)
-			 (ttname . string)
-			 (tpgid . number)
-			 (minflt . number)
-			 (majflt . number)
-			 (time . tramp-ps-time)
-			 (pri . number)
-			 (nice . number)
-			 (vsize . number)
-			 (rss . number)
-			 (etime . tramp-ps-time)
-			 (pcpu . number)
-			 (pmem . number)
-			 (args)))
-		 (tramp-connection-local-busybox-ps-profile
-			(tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
-			(tramp-process-attributes-ps-format
-			 (pid . number)
-			 (user . string)
-			 (group . string)
-			 (comm . 52)
-			 (state . 5)
-			 (ppid . number)
-			 (pgrp . number)
-			 (ttname . string)
-			 (time . tramp-ps-time)
-			 (nice . number)
-			 (etime . tramp-ps-time)
-			 (args)))
-		 (tramp-connection-local-bsd-ps-profile
-			(tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
-			(tramp-process-attributes-ps-format
-			 (pid . number)
-			 (euid . number)
-			 (user . string)
-			 (egid . number)
-			 (group . string)
-			 (comm . 52)
-			 (state . string)
-			 (ppid . number)
-			 (pgrp . number)
-			 (sess . number)
-			 (ttname . string)
-			 (tpgid . number)
-			 (minflt . number)
-			 (majflt . number)
-			 (time . tramp-ps-time)
-			 (pri . number)
-			 (nice . number)
-			 (vsize . number)
-			 (rss . number)
-			 (etime . number)
-			 (pcpu . number)
-			 (pmem . number)
-			 (args)))
-		 (tramp-connection-local-default-shell-profile
-			(shell-file-name . "/bin/sh")
-			(shell-command-switch . "-c"))
-		 (tramp-connection-local-default-system-profile
-			(path-separator . ":")
-			(null-device . "/dev/null"))))
+   '((tramp-connection-local-darwin-ps-profile
+      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (euid . number)
+       (user . string)
+       (egid . number)
+       (comm . 52)
+       (state . 5)
+       (ppid . number)
+       (pgrp . number)
+       (sess . number)
+       (ttname . string)
+       (tpgid . number)
+       (minflt . number)
+       (majflt . number)
+       (time . tramp-ps-time)
+       (pri . number)
+       (nice . number)
+       (vsize . number)
+       (rss . number)
+       (etime . tramp-ps-time)
+       (pcpu . number)
+       (pmem . number)
+       (args)))
+     (tramp-connection-local-busybox-ps-profile
+      (tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (user . string)
+       (group . string)
+       (comm . 52)
+       (state . 5)
+       (ppid . number)
+       (pgrp . number)
+       (ttname . string)
+       (time . tramp-ps-time)
+       (nice . number)
+       (etime . tramp-ps-time)
+       (args)))
+     (tramp-connection-local-bsd-ps-profile
+      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
+      (tramp-process-attributes-ps-format
+       (pid . number)
+       (euid . number)
+       (user . string)
+       (egid . number)
+       (group . string)
+       (comm . 52)
+       (state . string)
+       (ppid . number)
+       (pgrp . number)
+       (sess . number)
+       (ttname . string)
+       (tpgid . number)
+       (minflt . number)
+       (majflt . number)
+       (time . tramp-ps-time)
+       (pri . number)
+       (nice . number)
+       (vsize . number)
+       (rss . number)
+       (etime . number)
+       (pcpu . number)
+       (pmem . number)
+       (args)))
+     (tramp-connection-local-default-shell-profile
+      (shell-file-name . "/bin/sh")
+      (shell-command-switch . "-c"))
+     (tramp-connection-local-default-system-profile
+      (path-separator . ":")
+      (null-device . "/dev/null"))))
  '(elfeed-feeds
-	 '("https://www.youtube.com/feeds/videos.xml?channel_id=UCdJdEguB1F1CiYe7OEi3SBg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtowLlQSH6QRtp0-Z26U17A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCKtix2xNNXdcEfEFnoOnvMw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCRC6cNamj9tYAO6h_RXd5xA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ" "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCQD3awTLw9i8Xzh85FKsuJA" "https://www.youtube.com/feeds/videos.xml?channel_id=UClyGlKOhDUooPJFy4v_mqPg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCnQC_XGCCI__qrxwgZS27-A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCcnci5vbpLJ-rh_V9yXwawg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCS0N5baNlQWJCUrhCEo8WlA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCD6VugMZKRhSyzWEWA9W2fg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtHaxi4GTYDpJgMSGy7AeSw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCCnILYoBNuR4qaUOynGWzRg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCJ0-OtVpF0wOKEqT2Z1HEtA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCFLwN7vRu8M057qJF8TsBaA"))
+   '("https://www.youtube.com/feeds/videos.xml?channel_id=UCdJdEguB1F1CiYe7OEi3SBg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtowLlQSH6QRtp0-Z26U17A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCKtix2xNNXdcEfEFnoOnvMw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCRC6cNamj9tYAO6h_RXd5xA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ" "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCQD3awTLw9i8Xzh85FKsuJA" "https://www.youtube.com/feeds/videos.xml?channel_id=UClyGlKOhDUooPJFy4v_mqPg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCnQC_XGCCI__qrxwgZS27-A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCcnci5vbpLJ-rh_V9yXwawg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCS0N5baNlQWJCUrhCEo8WlA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCD6VugMZKRhSyzWEWA9W2fg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtHaxi4GTYDpJgMSGy7AeSw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCCnILYoBNuR4qaUOynGWzRg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCJ0-OtVpF0wOKEqT2Z1HEtA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCFLwN7vRu8M057qJF8TsBaA"))
  '(inhibit-startup-screen t)
- '(warning-suppress-types '((emacs) (comp) comp)))
+ '(warning-suppress-types '((comp) (emacs) comp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
