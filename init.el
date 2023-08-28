@@ -65,25 +65,6 @@
 (use-package undo-tree
   :demand t
   :config (global-undo-tree-mode))
-(use-package tempel
-  :custom (tempel-trigger-prefix "<")
-  :bind (("M-+" . tempel-complete)
-         ("M-*" . tempel-insert))
-  :init
-  ;; Setup completion at point
-  (defun tempel-setup-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf))
-(use-package tempel-collection
-	:requires (tempel)
-	:demand t)
-(use-package eglot-tempel
-	:straight nil
-	:requires (eglot tempel)
-	:config (eglot-tempel-mode))
 (use-package flycheck
   :demand t
 	:config (global-flycheck-mode)
@@ -126,7 +107,7 @@
   :demand t
 	:after (orderless)
 	:custom (consult-line-start-from-top t)
-	:bind ("C-s" . consult-line) ("M-i" . consult-imenu))
+	:bind ("C-s" . consult-line) ("M-i" . consult-imenu) ("C-x b" . consult-buffer) ("C-x p b" . consult-project-buffer))
 (use-package embark
   :demand t
   :bind
@@ -196,6 +177,18 @@
 	(setq-default shell-file-name "bash")
 	(setq-default tab-width 2 indent-tabs-mode t)
 	(setq-default compile-command "make -j16")
+	(org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)
+     (emacs-lisp . t)
+     (lisp . t)
+     (makefile . t)
+     (org . t)
+     (calc . t)
+		 (C . t)
+		 (eshell . t)
+		 (scheme . t)))
+  (setq org-src-preserve-indentation t org-src-fontify-natively t org-confirm-babel-evaluate nil)
 	:hook (xref-after-update-hook . outline-minor-mode)
 	(prog-mode . display-line-numbers-mode)
 	:bind (("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline) ("C-x p C-f" . project-find-file)))
@@ -219,12 +212,11 @@
 (use-package eglot
 	:straight nil
 	:requires (orderless cape)
-	:after (tempel)
 	:demand t
 	:custom (completion-category-overrides '((eglot (styles orderless))))
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
 	(add-hook 'eglot-managed-mode-hook #'(setq-local completion-at-point-functions
-																					 (list (cape-super-capf #'eglot-completion-at-point #'tempel-expand #'cape-file))))
+																									 (list (cape-super-capf #'eglot-completion-at-point #'cape-file))))
 	:bind (:map eglot-mode-map
 							("C-c C-e C-a" . eglot-code-actions)
 							("C-c C-e a" . eglot-code-actions)
@@ -290,7 +282,7 @@
 (use-package paredit
   :demand t
   :hook
-  (lisp-mode lisp-interaction-mode slime-repl-mode emacs-lisp-mode scheme-mode)
+  (lisp-mode lisp-interaction-mode emacs-lisp-mode scheme-mode)
   :bind
   (:map paredit-mode-map
 				("M-<right>" . paredit-forward-slurp-sexp)
@@ -298,7 +290,9 @@
 				("C-<left>" . paredit-backward-slurp-sexp)
 				("C-<right>" . paredit-backward-barf-sexp)
 				("M-r" . move-to-window-line-top-bottom)
-				("C-k" . paredit-kill))) ; todo bind paredit-forward and paredit-backward
+				("C-k" . paredit-kill))
+	:config
+	(add-hook 'sly-mrepl-mode-hook #'(lambda () (paredit-mode -1)))) ; todo bind paredit-forward and paredit-backward
 
 (use-package highlight-function-calls
   :hook (lisp-mode emacs-lisp-mode scheme-mode))
@@ -352,25 +346,6 @@
   :requires org
   :demand t
   :hook ((org-mode) (org-agenda-finalize . org-modern-agenda)))
-;; (use-package org-babel
-;; 	:straight nil
-;;   :requires org
-;;   :demand t
-;;   :config
-;;   ((org-babel-do-load-languages
-;;     'org-babel-load-languages
-;;     '((shell . t)
-;;       (emacs-lisp . t)
-;;       (arduino . t)
-;;       (lisp . t)
-;;       (makefile . t)
-;;       (org . t)
-;;       (calc . t)
-;; 			(C . t)
-;; 			(cpp . t)
-;; 			(eshell . t)
-;; 			(scheme . t)))
-;;    (setq org-src-preserve-indentation t org-src-fontify-natively t org-confirm-babel-evaluate nil)))
 (use-package org-download
   :demand t
   :requires org)
