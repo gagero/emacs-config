@@ -1,6 +1,6 @@
 ;;; init.el --- init
 ;;; Commentary:
-;;; TODO: ASM setup, GUD setup, occur, xref keybindings, switching to flymake
+;;; TODO: ASM setup, GUD setup, occur, xref keybindings
 ;;; init.el, todos in ~/.emacs.d/emacs.org
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
@@ -29,6 +29,11 @@
 
 ;; load Guix packages
 (add-to-list 'load-path "~/.guix-profile/share/emacs/site-lisp")
+
+;; Load server
+(require 'server)
+(unless (server-running-p)
+  (server-start))
 
 ;; global minor modes
 (use-package corfu
@@ -203,32 +208,26 @@
 	:hook (zig-mode . zig-add-electric-pairs)
 	:demand t
 	:config (setq-local compile-command "zig build-exe"))
-(use-package rustic
-	:demand t
-	:config (setq-local compile-command "cargo build")
-	(setq rustic-lsp-client 'eglot))
 
 ;; LSP
 (use-package eglot
 	:straight nil
 	:requires (orderless cape)
 	:demand t
-	:custom (completion-category-overrides '((eglot (styles orderless))))
+	:hook
+	(c-ts-mode . eglot-ensure)
+	(zig-mode . eglot-ensure)
+	(c++-ts-mode . eglot-ensure)
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
-	(add-hook 'eglot-managed-mode-hook #'(setq-local completion-at-point-functions
-																									 (list (cape-super-capf #'eglot-completion-at-point #'cape-file))))
+	(add-hook 'eglot-managed-mode-hook #'(lambda () (setq-local completion-at-point-functions
+																															(list (cape-super-capf #'eglot-completion-at-point #'cape-file)))))
 	:bind (:map eglot-mode-map
 							("C-c C-e C-a" . eglot-code-actions)
 							("C-c C-e a" . eglot-code-actions)
 							("C-c C-e C-r" . eglot-rename)
 							("C-c C-e r" . eglot-rename)
 							("C-c C-e C-f" . eglot-format-buffer)
-							("C-c C-e f" . eglot-format-buffer)
-							("C-c C-e " . eglot-))
-	:hook
-	(c-ts-mode . eglot-ensure)
-	(zig-mode . eglot-ensure)
-	(c++-ts-mode . eglot-ensure))
+							("C-c C-e f" . eglot-format-buffer)))
 
 ;; magit
 (use-package magit
@@ -241,11 +240,10 @@
 
 ;; Debugging
 (defun debug-gud ()
-  "GUD setup for Rust and core files."
+  "GUD setup for core files."
   (interactive)
-  (cond ((and (or (equal major-mode 'c-mode) (equal major-mode 'c++-mode)) (file-exists-p "./core"))
-				 ((setq gud-gdb-command-name "gdb -i=mi ./core") (gud-gdb)))
-				((equal major-mode 'rust-mode) (rust-gdb))))
+  (when (and (or (equal major-mode 'c-mode) (equal major-mode 'c++-mode)) (file-exists-p "./core"))
+		(setq gud-gdb-command-name "gdb -i=mi ./core") (gud-gdb)))
 
 ;; ERC (IRC)
 (use-package erc
@@ -290,9 +288,11 @@
 				("C-<left>" . paredit-backward-slurp-sexp)
 				("C-<right>" . paredit-backward-barf-sexp)
 				("M-r" . move-to-window-line-top-bottom)
-				("C-k" . paredit-kill))
+				("C-k" . paredit-kill)
+				("C-M-f" . paredit-forward)
+				("C-M-b" . paredit-backward))
 	:config
-	(add-hook 'sly-mrepl-mode-hook #'(lambda () (paredit-mode -1)))) ; todo bind paredit-forward and paredit-backward
+	(add-hook 'sly-mrepl-mode-hook #'(lambda () (paredit-mode -1))))
 
 (use-package highlight-function-calls
   :hook (lisp-mode emacs-lisp-mode scheme-mode))
@@ -326,8 +326,6 @@
 (use-package macrostep-geiser
 	:demand t)
 
-;; ASM config (gas)
-
 ;; Org
 (use-package org
   :straight nil
@@ -345,10 +343,7 @@
 (use-package org-modern
   :requires org
   :demand t
-  :hook ((org-mode) (org-agenda-finalize . org-modern-agenda)))
-(use-package org-download
-  :demand t
-  :requires org)
+  :hook (org-mode) (org-agenda-finalize . org-modern-agenda))
 
 ;; Testing
 ;; (use-package combobulate)
@@ -358,82 +353,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(connection-local-criteria-alist
-   '(((:application tramp)
-      tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
- '(connection-local-profile-alist
-   '((tramp-connection-local-darwin-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . tramp-ps-time)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-busybox-ps-profile
-      (tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (user . string)
-       (group . string)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (ttname . string)
-       (time . tramp-ps-time)
-       (nice . number)
-       (etime . tramp-ps-time)
-       (args)))
-     (tramp-connection-local-bsd-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (group . string)
-       (comm . 52)
-       (state . string)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . number)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-default-shell-profile
-      (shell-file-name . "/bin/sh")
-      (shell-command-switch . "-c"))
-     (tramp-connection-local-default-system-profile
-      (path-separator . ":")
-      (null-device . "/dev/null"))))
  '(elfeed-feeds
    '("https://www.youtube.com/feeds/videos.xml?channel_id=UCdJdEguB1F1CiYe7OEi3SBg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtowLlQSH6QRtp0-Z26U17A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCKtix2xNNXdcEfEFnoOnvMw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCRC6cNamj9tYAO6h_RXd5xA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ" "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCQD3awTLw9i8Xzh85FKsuJA" "https://www.youtube.com/feeds/videos.xml?channel_id=UClyGlKOhDUooPJFy4v_mqPg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCnQC_XGCCI__qrxwgZS27-A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCcnci5vbpLJ-rh_V9yXwawg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCS0N5baNlQWJCUrhCEo8WlA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCD6VugMZKRhSyzWEWA9W2fg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtHaxi4GTYDpJgMSGy7AeSw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCCnILYoBNuR4qaUOynGWzRg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCJ0-OtVpF0wOKEqT2Z1HEtA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCFLwN7vRu8M057qJF8TsBaA"))
  '(inhibit-startup-screen t)
