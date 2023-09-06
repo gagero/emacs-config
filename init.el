@@ -5,7 +5,7 @@
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
 
-;;(hydra elfeed-goodies elfeed-dashboard elfeed-summary elfeed-autotag elfeed-tube elfeed-tube-mpv pdf-tools hl-todo org-contrib magit-todos magit-org-todos erc-hl-nicks erc-colorize sly sly-stepper)
+;;(hydra hl-todo  magit-todos erc-hl-nicks erc-colorize sly-stepper)
 
 ;; package management
 (defvar bootstrap-version)
@@ -27,9 +27,7 @@
 	:custom (haki-region "#2e8b6d"))
 (load-theme 'haki t)
 
-;; load Guix packages
-(add-to-list 'load-path "~/.guix-profile/share/emacs/site-lisp")
-
+(add-to-list 'load-path "~/.emacs.d/info+")
 ;; Load server
 (require 'server)
 (unless (server-running-p)
@@ -92,10 +90,6 @@
 (use-package diff-hl
 	:hook (prog-mode text-mode)
 	:config (diff-hl-margin-mode))
-(use-package color-identifiers-mode
-  :demand t
-  :config
-  (global-color-identifiers-mode))
 (use-package marginalia
   :demand t
   :config (marginalia-mode)
@@ -120,20 +114,9 @@
 	("C-." . embark-dwim)
 	("M-/" . embark-export))
 (use-package embark-consult)
-(use-package helpful
-  :demand t
-  :bind
-  (("C-h f" . helpful-callable)
-   ("C-h v" . helpful-variable)
-   ("C-h k" . helpful-key)
-   ("C-h F" . helpful-function)
-   ("C-h C" . helpful-command)
-   ("C-c C-d" . helpful-at-point)))
 (use-package eat
 	:demand t
 	:hook (eshell-load . eat-eshell-mode))
-(use-package elfeed
-  :demand t)
 (use-package xclip
   :demand t
   :config (xclip-mode))
@@ -214,10 +197,6 @@
 	:straight nil
 	:requires (orderless cape)
 	:demand t
-	:hook
-	(c-ts-mode . eglot-ensure)
-	(zig-mode . eglot-ensure)
-	(c++-ts-mode . eglot-ensure)
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
 	(add-hook 'eglot-managed-mode-hook #'(lambda () (setq-local completion-at-point-functions
 																															(list (cape-super-capf #'eglot-completion-at-point #'cape-file)))))
@@ -227,7 +206,11 @@
 							("C-c C-e C-r" . eglot-rename)
 							("C-c C-e r" . eglot-rename)
 							("C-c C-e C-f" . eglot-format-buffer)
-							("C-c C-e f" . eglot-format-buffer)))
+							("C-c C-e f" . eglot-format-buffer))
+	:hook
+	(c-ts-mode . eglot-ensure)
+	(zig-mode . eglot-ensure)
+	(c++-ts-mode . eglot-ensure))
 
 ;; magit
 (use-package magit
@@ -256,10 +239,6 @@
   :hook
   (erc-mode . (lambda () (undo-tree-mode -1) (eldoc-mode -1)))
   :hook (erc-echo-notice-hook . erc-echo-notice-in-minibuffer))
-
-;; Ement (Matrix)
-(use-package ement
-	:demand t)
 
 (use-package disaster
   :bind (:map c-ts-mode-map
@@ -320,12 +299,6 @@
 	:demand t
 	:requires (sly))
 
-;; Guile Config
-(use-package geiser-guile
-	:demand t)
-(use-package macrostep-geiser
-	:demand t)
-
 ;; Org
 (use-package org
   :straight nil
@@ -353,8 +326,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(elfeed-feeds
-   '("https://www.youtube.com/feeds/videos.xml?channel_id=UCdJdEguB1F1CiYe7OEi3SBg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtowLlQSH6QRtp0-Z26U17A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCKtix2xNNXdcEfEFnoOnvMw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCRC6cNamj9tYAO6h_RXd5xA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCAiiOTio8Yu69c3XnR7nQBQ" "https://www.youtube.com/feeds/videos.xml?channel_id=UCBa659QWEk1AI4Tg--mrJ2A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCQD3awTLw9i8Xzh85FKsuJA" "https://www.youtube.com/feeds/videos.xml?channel_id=UClyGlKOhDUooPJFy4v_mqPg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCnQC_XGCCI__qrxwgZS27-A" "https://www.youtube.com/feeds/videos.xml?channel_id=UCcnci5vbpLJ-rh_V9yXwawg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCS0N5baNlQWJCUrhCEo8WlA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCD6VugMZKRhSyzWEWA9W2fg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCtHaxi4GTYDpJgMSGy7AeSw" "https://www.youtube.com/feeds/videos.xml?channel_id=UCCnILYoBNuR4qaUOynGWzRg" "https://www.youtube.com/feeds/videos.xml?channel_id=UCJ0-OtVpF0wOKEqT2Z1HEtA" "https://www.youtube.com/feeds/videos.xml?channel_id=UCFLwN7vRu8M057qJF8TsBaA"))
  '(inhibit-startup-screen t)
  '(warning-suppress-types '((comp) (emacs) comp)))
 (custom-set-faces
