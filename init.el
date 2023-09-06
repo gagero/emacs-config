@@ -114,6 +114,9 @@
 	("C-." . embark-dwim)
 	("M-/" . embark-export))
 (use-package embark-consult)
+(use-package eat
+	:demand t
+	:hook (eshell-load . eat-eshell-mode))
 (use-package elfeed
   :demand t)
 (use-package xclip
@@ -159,8 +162,6 @@
 	(undelete-frame-mode)
 	(show-paren-mode)
 	(defalias 'yes-or-no-p 'y-or-n-p)
-	(defalias 'term 'eat)
-	(defalias 'shell 'eat)
 	(setq-default shell-file-name "bash")
 	(setq-default tab-width 2 indent-tabs-mode t)
 	(setq-default compile-command "make -j16")
