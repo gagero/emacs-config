@@ -120,6 +120,10 @@
   :config (xclip-mode))
 (use-package treesit-auto
   :config (global-treesit-auto-mode))
+(use-package zone-nyan
+	:requires (zone)
+	:config (setq zone-programs [zone-nyan])
+	(zone-when-idle 30))
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
