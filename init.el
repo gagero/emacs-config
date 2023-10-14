@@ -161,7 +161,7 @@
 	(global-auto-revert-mode)
 	(undelete-frame-mode)
 	(show-paren-mode)
-	(defalias 'yes-or-no-p 'y-or-n-p)
+	(setopt use-short-answers t)
 	(setq-default shell-file-name "bash")
 	(setq-default tab-width 2 indent-tabs-mode t)
 	(setq-default compile-command "make -j16")
