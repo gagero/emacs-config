@@ -158,8 +158,8 @@
 	(global-auto-revert-mode)
 	(undelete-frame-mode)
 	(show-paren-mode)
-	(defalias 'yes-or-no-p 'y-or-n-p)
 	(setq-default shell-file-name "bash" tab-width 2 indent-tabs-mode t compile-command "make -j16")
+	(setopt use-short-answers t)
 	(org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)
