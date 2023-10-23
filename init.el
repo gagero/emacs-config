@@ -5,7 +5,7 @@
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
 
-;;(hydra hl-todo  magit-todos erc-hl-nicks erc-colorize sly-stepper)
+;;(erc-hl-nicks erc-colorize sly-stepper)
 
 ;; package management
 (defvar bootstrap-version)
@@ -24,9 +24,8 @@
 
 (use-package haki-theme
 	:demand t
-	:custom (haki-region "#2e8b6d"))
-(load-theme 'haki t)
-
+	:custom (haki-region "#2e8b6d")
+	:config (load-theme 'haki t))
 (add-to-list 'load-path "~/.emacs.d/info+")
 
 ;; global minor modes
@@ -113,13 +112,14 @@
 (use-package eat
 	:demand t
 	:hook (eshell-load . eat-eshell-mode))
-(use-package elfeed
-  :demand t)
 (use-package xclip
   :demand t
   :config (xclip-mode))
 (use-package treesit-auto
   :config (global-treesit-auto-mode))
+(use-package hl-todo
+	:demand t
+	:config (hl-todo-mode))
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
@@ -144,6 +144,7 @@
 (use-package emacs
 	:straight nil
 	:demand t
+	:after (consult)
 	:config
 	(scroll-bar-mode -1)
 	(menu-bar-mode -1)
@@ -158,9 +159,7 @@
 	(undelete-frame-mode)
 	(show-paren-mode)
 	(defalias 'yes-or-no-p 'y-or-n-p)
-	(setq-default shell-file-name "bash")
-	(setq-default tab-width 2 indent-tabs-mode t)
-	(setq-default compile-command "make -j16")
+	(setq-default shell-file-name "bash" tab-width 2 indent-tabs-mode t compile-command "make -j16")
 	(org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)
@@ -179,7 +178,6 @@
 (setq  debug-on-error t load-prefer-newer t sentence-end-double-space t make-backup-files nil select-enable-clipboard t next-line-add-newlines t show-paren-context-when-offscreen t compilation-auto-jump-to-first-error 'first-known completion-cycle-threshold 3 tab-always-indent 'complete gc-cons-threshold (* 100 1024 1024) read-process-output-max (* 1024 1024) browse-url-browser-function #'eww-browse-url)
 
 ;; Major modes without extra config
-
 (use-package zig-mode
 	:init (defvar zig-pairs '((?| . ?|)))
 	(defun zig-add-electric-pairs ()
@@ -195,7 +193,7 @@
 	:demand t
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
 	(add-hook 'eglot-managed-mode-hook #'(lambda () (setq-local completion-at-point-functions
-																															(list (cape-super-capf #'eglot-completion-at-point #'cape-file)))))
+																															(list (cape-super-capf #'eglot-completion-at-point #'cape-keyword #'cape-file #'cape-dabbrev #'cape-line #'cape-dict)))))
 	:bind (:map eglot-mode-map
 							("C-c C-e C-a" . eglot-code-actions)
 							("C-c C-e a" . eglot-code-actions)
@@ -255,7 +253,8 @@
 (use-package paredit
   :demand t
   :hook
-  (lisp-mode lisp-interaction-mode emacs-lisp-mode scheme-mode)
+  (emacs-lisp-mode . paredit-mode)
+	(lisp-mode . paredit-mode)
   :bind
   (:map paredit-mode-map
 				("M-<right>" . paredit-forward-slurp-sexp)
@@ -268,9 +267,6 @@
 				("C-M-b" . paredit-backward))
 	:config
 	(add-hook 'sly-mrepl-mode-hook #'(lambda () (paredit-mode -1))))
-
-(use-package highlight-function-calls
-  :hook (lisp-mode emacs-lisp-mode scheme-mode))
 
 (use-package lisp-extra-font-lock
   :config (lisp-extra-font-lock-global-mode))
