@@ -97,6 +97,7 @@
   :hook (prog-mode . hs-minor-mode))
 (use-package iedit
 	:demand t)
+(use-package embark-consult)
 (use-package consult
   :demand t
 	:after (orderless)
@@ -108,7 +109,6 @@
 	("C-M-SPC" . embark-act)
 	("C-." . embark-dwim)
 	("M-/" . embark-export))
-(use-package embark-consult)
 (use-package eat
 	:demand t
 	:hook (eshell-load . eat-eshell-mode))
