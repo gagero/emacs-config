@@ -90,7 +90,7 @@
   :config (marginalia-mode)
   :bind
   (:map minibuffer-local-map
-				("M-A" . marginalia-cycle)))
+		("M-A" . marginalia-cycle)))
 (use-package hideshow
   :straight nil
   :demand t
@@ -120,24 +120,31 @@
 (use-package hl-todo
 	:demand t
 	:config (hl-todo-mode))
+(use-package yasnippet
+  :demand t
+  :config (yas-global-mode)
+  :bind
+  ("C-M-n" . yas-next-field)
+  ("C-M-p" . yas-prev-field))
+(use-package yasnippet-snippets)
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
 
 (defun end-newline ()
-	"Inserts newline below point."
+	"Insert newline below point."
 	(interactive)
-	(move-end-of-line)
+	(move-end-of-line nil)
 	(newline-and-indent))
 
 (defun begin-newline ()
-	"Inserts newline above point."
+	"Insert newline above point."
 	(interactive)
-	(move-beginning-of-line)
+	(move-beginning-of-line nil)
 	(newline-and-indent))
 
 (defun indent-buffer ()
-	"Indents the entire buffer."
+	"Indent the entire buffer."
 	(interactive)
 	(indent-region 0 (buffer-size)))
 
@@ -150,7 +157,6 @@
 	(menu-bar-mode -1)
 	(tool-bar-mode -1)
 	(global-auto-revert-mode)
-	(pixel-scroll-precision-mode)
 	(save-place-mode)
 	(menu-bar--display-line-numbers-mode-relative)
 	(electric-pair-mode)
@@ -168,11 +174,12 @@
      (makefile . t)
      (org . t)
      (calc . t)
-		 (C . t)
-		 (eshell . t)
-		 (scheme . t)))
+	 (C . t)
+	 (eshell . t)
+	 (scheme . t)))
   (setq org-src-preserve-indentation t org-src-fontify-natively t org-confirm-babel-evaluate nil)
-	:hook (xref-after-update-hook . outline-minor-mode)
+	:hook
+	(xref-after-update-hook . outline-minor-mode)
 	(prog-mode . display-line-numbers-mode)
 	:bind (("C-r" . replace-string) ("C-c C-c" . compile) ("C-j" . end-newline) ("C-x p C-f" . project-find-file)))
 (setq  debug-on-error t load-prefer-newer t sentence-end-double-space t make-backup-files nil select-enable-clipboard t next-line-add-newlines t show-paren-context-when-offscreen t compilation-auto-jump-to-first-error 'first-known completion-cycle-threshold 3 tab-always-indent 'complete gc-cons-threshold (* 100 1024 1024) read-process-output-max (* 1024 1024) browse-url-browser-function #'eww-browse-url)
@@ -193,7 +200,7 @@
 	:demand t
 	:config (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster) (setq completion-category-overrides '((eglot (styles orderless))))
 	(add-hook 'eglot-managed-mode-hook #'(lambda () (setq-local completion-at-point-functions
-																															(list (cape-super-capf #'eglot-completion-at-point #'cape-keyword #'cape-file #'cape-dabbrev #'cape-line #'cape-dict)))))
+																(list (cape-super-capf #'eglot-completion-at-point #'cape-keyword #'cape-file #'cape-dabbrev #'cape-line #'cape-dict)))))
 	:bind (:map eglot-mode-map
 							("C-c C-e C-a" . eglot-code-actions)
 							("C-c C-e a" . eglot-code-actions)
@@ -296,10 +303,6 @@
   :straight nil
   :demand t
   :config (add-to-list 'org-file-apps '(directory . emacs)))
-(use-package org-auto-tangle
-  :requires org
-  :demand t
-  :hook (org-mode))
 (use-package org-indent
   :straight nil
   :requires org
