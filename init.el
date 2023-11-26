@@ -127,6 +127,9 @@
   ("C-M-n" . yas-next-field)
   ("C-M-p" . yas-prev-field))
 (use-package yasnippet-snippets)
+(use-package magit-todos
+  :after (magit)
+  :config (magit-todos-mode))
 (with-eval-after-load 'dired '(require dired-x))
 
 ;; global functions
