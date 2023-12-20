@@ -69,6 +69,7 @@
 	:hook (prog-mode text-mode)
 	:config (diff-hl-margin-mode))
 (use-package marginalia
+	:demand t
   :config (marginalia-mode)
   :bind
   (:map minibuffer-local-map
@@ -288,6 +289,7 @@
 (use-package platformio-mode)
 (use-package workgroups
 	:custom (wg-prefix-key (kbd "C-c w")))
+;; (package-vc-install "https://github.com/joaotavora/sly-stepper")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -297,7 +299,9 @@
  '(delete-selection-mode nil)
  '(inhibit-startup-screen t)
  '(package-selected-packages
-	 '(workgroups platformio-mode projectile affe org-modern sly-quicklisp sly-asdf sly-macrostep sly rainbow-delimiters lisp-extra-font-lock paredit disaster forge magit zig-mode yasnippet-snippets xclip with-editor which-key vertico undo-tree treesit-auto orderless marginalia kind-icon iedit hl-todo haki-theme flycheck embark-consult eat diff-hl corfu cape beacon))
+	 '(sly-stepper workgroups platformio-mode projectile affe org-modern sly-quicklisp sly-asdf sly-macrostep sly rainbow-delimiters lisp-extra-font-lock paredit disaster forge magit zig-mode yasnippet-snippets xclip with-editor which-key vertico undo-tree treesit-auto orderless marginalia kind-icon iedit hl-todo haki-theme flycheck embark-consult eat diff-hl corfu cape beacon))
+ '(package-vc-selected-packages
+	 '((sly-stepper :vc-backend Git :url "https://github.com/joaotavora/sly-stepper")))
  '(warning-suppress-types '((comp) (emacs) comp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
