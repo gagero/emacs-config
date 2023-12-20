@@ -1,10 +1,6 @@
 ;;; init.el --- init
 ;;; Commentary:
-<<<<<<< HEAD
 ;;; TODO: ASM setup
-=======
-;;; TODO: ASM setup, GUD setup, occur, xref keybindings
->>>>>>> refs/remotes/github/master
 ;;; init.el, todos in ~/.emacs.d/emacs.org
 ;; -*- lexical-binding: t; -*-
 ;;; Code:
@@ -12,7 +8,6 @@
 ;;(erc-hl-nicks erc-colorize sly-stepper)
 
 ;; package management
-<<<<<<< HEAD
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
@@ -20,34 +15,12 @@
 (setq use-package-always-ensure t)
 
 (use-package haki-theme
-=======
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-(setq straight-use-package-by-default t)
-
-(use-package haki-theme
-	:demand t
->>>>>>> refs/remotes/github/master
 	:custom (haki-region "#2e8b6d")
 	:config (load-theme 'haki t))
 (add-to-list 'load-path "~/.emacs.d/info+")
 
 ;; global minor modes
 (use-package corfu
-<<<<<<< HEAD
-=======
-	:demand t
->>>>>>> refs/remotes/github/master
 	:after (emacs)
 	:custom ((corfu-auto t) (corfu-cycle t) (corfu-preselect 'prompt) (corfu-quit-no-match t))
 	:hook (prog-mode . corfu-mode)
