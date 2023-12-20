@@ -298,6 +298,7 @@
  ;; If there is more than one, they won't work right.
  '(delete-selection-mode nil)
  '(inhibit-startup-screen t)
+ '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(package-selected-packages
 	 '(sly-stepper workgroups platformio-mode projectile affe org-modern sly-quicklisp sly-asdf sly-macrostep sly rainbow-delimiters lisp-extra-font-lock paredit disaster forge magit zig-mode yasnippet-snippets xclip with-editor which-key vertico undo-tree treesit-auto orderless marginalia kind-icon iedit hl-todo haki-theme flycheck embark-consult eat diff-hl corfu cape beacon))
  '(package-vc-selected-packages
