@@ -149,6 +149,7 @@
 	(show-paren-mode)
 	(setq-default shell-file-name "bash" tab-width 2 indent-tabs-mode t compile-command "make -j16" treesit-font-lock-level 4)
 	(setopt use-short-answers t)
+	(defalias #'shell #'eshell)
 	(org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)
